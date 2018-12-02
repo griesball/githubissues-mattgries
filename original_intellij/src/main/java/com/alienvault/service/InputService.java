@@ -1,5 +1,6 @@
 package com.alienvault.service;
 
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class InputService {
@@ -8,6 +9,7 @@ public class InputService {
 
     }
 
+    //No args were passed when starting the app, run a cmd line prompt
     public static String[] getArgs(){
         String[] args;
         String input;
@@ -22,7 +24,8 @@ public class InputService {
         }
     }
 
-    public static String inputArgsFromCmdLine(){
+    //User prompt for inputs in the owner/repo format
+    private static String inputArgsFromCmdLine(){
         Scanner scanner = new Scanner(System.in);
         System.out.println("Input missing.  Enter now:");
         return scanner.next();

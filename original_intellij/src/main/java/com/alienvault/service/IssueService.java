@@ -35,6 +35,8 @@ public class IssueService {
         this.gitHub = GitHub.connectAnonymously();
     }
 
+    //Main call into issue service
+    //Works through input list to retrieve information
     public String generateIssueReport(){
         for (Integer i = 0; i < inputs.length; i++){
             processSingleInput(i);
@@ -42,9 +44,11 @@ public class IssueService {
         return formatReturnData();
     }
 
-    //Use github search
+    //Retrieves issues associated with single repo
     //type:issue
     //repo:{arg}
+    //I was worried about data being paged but the repo.listIssues method already steps through the pages to build a single list.
+    //And the getIssues method uses the listIssues method and converts it to a list
     private void processSingleInput(Integer index){
         if(inputs[index].trim().matches(".*\\/.*")){
             GHRepository repo;
@@ -53,14 +57,15 @@ public class IssueService {
                 repo = gitHub.getRepository(inputs[index]);
             }
             catch (IOException e){
-                System.out.println(e.toString());
+                System.out.println(inputs[index] + " : Cannot access repo.");
+                invalidInputTracker.add(new InvalidInput(inputs[index],"Cannot access repo."));
                 return;
             }
             try {
                 issuesForRepo = repo.getIssues(GHIssueState.ALL);
             }
             catch (IOException e){
-                System.out.println(e.toString());
+                System.out.println(inputs[index] + " : Cannot access repo.");
                 invalidInputTracker.add(new InvalidInput(inputs[index],"Cannot access repo."));
                 return;
             }
@@ -97,10 +102,13 @@ public class IssueService {
             }
 
         }else{
+            System.out.println(inputs[index] + " : Input doesn't meet owner/repo format.");
             invalidInputTracker.add(new InvalidInput(inputs[index],"Input doesn't meet owner/repo format."));
         }
     }
 
+    //Build Json return object using GSON library
+    //Assemble hashmap to match desired results
     private String formatReturnData(){
         Map<String,Object> reportFormat = new HashMap<String,Object>();
         if(issues.size() > 0) {
@@ -113,6 +121,7 @@ public class IssueService {
         return json.toJson(reportFormat);
     }
 
+    //Build top day report using gathered information of dateWithMostIssues
     private HashMap<String,Object> buildTopDayReport(){
         HashMap<String,Object> topDayReport = new HashMap<String,Object>();
         HashMap<String,Integer> occurrencesReport = new HashMap<String,Integer>();
