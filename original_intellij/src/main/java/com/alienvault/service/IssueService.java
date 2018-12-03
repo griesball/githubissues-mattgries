@@ -44,6 +44,16 @@ public class IssueService {
         }
     }
 
+    public IssueService(String[] inputRepos, String accessToken){
+        this.inputs = inputRepos;
+        try{
+            this.gitHub = GitHub.connectUsingOAuth(accessToken);
+        }
+        catch(IOException e){
+            System.out.println("Test user rate limit exceeded.");
+        }
+    }
+
     private void gitHubRateExceeded(){
         try{
             HashMap<String,String> login = InputService.getLogin();
