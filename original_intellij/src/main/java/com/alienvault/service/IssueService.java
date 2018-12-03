@@ -30,9 +30,29 @@ public class IssueService {
     //Service for converting java objects to json
     private Gson json = new Gson();
 
-    public IssueService(String[] inputRepos) throws IOException {
+
+    public IssueService(String[] inputRepos){
         this.inputs = inputRepos;
-        this.gitHub = GitHub.connectAnonymously();
+        try {
+            this.gitHub = GitHub.connectAnonymously();
+            if(this.gitHub.rateLimit().remaining < 10){
+                gitHubRateExceeded();
+            }
+        }
+        catch(IOException e){
+            gitHubRateExceeded();
+        }
+    }
+
+    private void gitHubRateExceeded(){
+        try{
+            HashMap<String,String> login = InputService.getLogin();
+            this.gitHub = GitHub.connectUsingPassword(login.get("login"),login.get("password"));
+        }
+        catch (IOException e){
+            gitHubRateExceeded();
+        }
+
     }
 
     //Main call into issue service
@@ -136,6 +156,12 @@ public class IssueService {
         });
         topDayReport.put("occurrences", occurrencesReport);
         return topDayReport;
+    }
+
+    //Methods for determining internal values for use in testing.
+    public String getInvalidInputs(){
+        this.generateIssueReport();
+        return json.toJson(invalidInputTracker);
     }
 
 }
